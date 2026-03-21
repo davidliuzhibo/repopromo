@@ -5,6 +5,11 @@ __pycache__/
 examples/**/audio/
 examples/**/segments/
 examples/**/html/
+examples/**/png/
+examples/**/sample_video.mp4
+examples/**/sample_cover.png
+examples/**/sample_video.srt
+examples/**/sample_video.txt
 
 *.tmp
 *.log
