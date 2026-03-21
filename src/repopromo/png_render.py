@@ -55,6 +55,7 @@ def trim_white_edges(path: Path) -> None:
 def render_html_to_png(html_path: Path, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     edge = resolve_edge_binary()
+    resolved_output = output_path.resolve()
     command = [
         edge,
         "--headless=new",
@@ -64,14 +65,14 @@ def render_html_to_png(html_path: Path, output_path: Path) -> Path:
         "--virtual-time-budget=3000",
         "--force-device-scale-factor=1",
         "--window-size=1080,1920",
-        f"--screenshot={output_path}",
+        f"--screenshot={resolved_output}",
         html_path.resolve().as_uri(),
     ]
     subprocess.run(command, check=True)
-    if not output_path.exists():
+    if not resolved_output.exists():
         raise RuntimeError(f"Screenshot was not created for {html_path}")
-    trim_white_edges(output_path)
-    return output_path
+    trim_white_edges(resolved_output)
+    return resolved_output
 
 
 def render_html_directory_to_pngs(html_dir: str | Path, output_dir: str | Path) -> list[Path]:

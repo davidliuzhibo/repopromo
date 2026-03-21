@@ -127,7 +127,7 @@ def concat_segments(segment_paths: list[Path], output_path: str | Path) -> Path:
     output_path = Path(output_path)
     list_path = output_path.with_suffix(".txt")
     list_path.write_text(
-        "\n".join(f"file '{path.as_posix()}'" for path in segment_paths),
+        "\n".join(f"file '{path.resolve().as_posix()}'" for path in segment_paths),
         encoding="utf-8",
     )
     command = [

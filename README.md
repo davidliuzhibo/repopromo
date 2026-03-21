@@ -62,6 +62,20 @@ RepoPromo currently includes:
 - a minimal sample-video pipeline with Xiaoxiao narration
 - a skill skeleton for a future agent workflow
 
+## Demos
+
+The workflow was validated on real public projects:
+
+- [ClawDayDayUp](https://github.com/davidliuzhibo/clawdaydayup)
+- [ClawMingGuang](https://github.com/davidliuzhibo/clawmingguang)
+
+The current baseline can already produce:
+
+- a project brief
+- review HTML pages
+- review PNG slides
+- a Xiaoxiao-narrated sample video
+
 ## CLI examples
 
 ```bash

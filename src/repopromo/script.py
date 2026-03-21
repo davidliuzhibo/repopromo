@@ -73,10 +73,7 @@ def build_video_sections_zh(brief: ProjectBrief) -> list[VideoSection]:
                 key="why",
                 title="为什么需要",
                 visual_focus="problem_and_value",
-                narration=(
-                    f"{brief.project_name} 想解决的核心问题是："
-                    f"{_join_points(brief.why, separator='；')}。"
-                ),
+                narration=f"{brief.project_name} 想解决的核心问题是：{_join_points(brief.why, separator='；')}。",
             )
         )
 
@@ -86,10 +83,7 @@ def build_video_sections_zh(brief: ProjectBrief) -> list[VideoSection]:
                 key="mechanism",
                 title="实现机制",
                 visual_focus="mechanism_and_flow",
-                narration=(
-                    f"它把这件事拆成一条可执行的生产链："
-                    f"{_join_points(brief.mechanism, separator='；')}。"
-                ),
+                narration=f"它把这件事拆成一条可执行的生产链：{_join_points(brief.mechanism, separator='；')}。",
             )
         )
 
@@ -99,10 +93,7 @@ def build_video_sections_zh(brief: ProjectBrief) -> list[VideoSection]:
                 key="features",
                 title="关键能力",
                 visual_focus="feature_grid",
-                narration=(
-                    f"当前最值得展示的能力有："
-                    f"{_join_points(brief.features, separator='；')}。"
-                ),
+                narration=f"当前最值得展示的能力有：{_join_points(brief.features, separator='；')}。",
             )
         )
 
@@ -112,22 +103,17 @@ def build_video_sections_zh(brief: ProjectBrief) -> list[VideoSection]:
                 key="advantages",
                 title="主要优势",
                 visual_focus="advantages_and_differentiators",
-                narration=(
-                    f"它的优势不只是能出片，更在于："
-                    f"{_join_points(brief.advantages, separator='；')}。"
-                ),
+                narration=f"它的优势不只是在于能出片，更在于：{_join_points(brief.advantages, separator='；')}。",
             )
         )
 
-    cta_line = _join_points(brief.cta, limit=2, separator="；")
-    if not cta_line:
-        cta_line = f"在 GitHub 搜索 {brief.project_name}"
+    cta_line = _join_points(brief.cta, limit=2, separator="；") or f"在 GitHub 搜索 {brief.project_name}"
     sections.append(
         VideoSection(
             key="cta",
             title="行动引导",
             visual_focus="repo_name_and_search_hint",
-            narration=f"如果你想继续了解，可以{cta_line}。",
+            narration=f"如果你想继续了解，可以：{cta_line}。",
         )
     )
 
