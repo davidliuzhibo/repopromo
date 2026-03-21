@@ -1,0 +1,19 @@
+[project]
+name = "repopromo"
+version = "0.1.0"
+description = "A reusable workflow for turning GitHub projects into promo-video assets."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "davidliuzhibo" }
+]
+dependencies = []
+
+[project.scripts]
+repopromo = "repopromo.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

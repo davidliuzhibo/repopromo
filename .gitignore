@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+examples/**/audio/
+examples/**/segments/
+examples/**/html/
+
+*.tmp
+*.log

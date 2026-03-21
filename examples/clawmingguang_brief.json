@@ -1,0 +1,182 @@
+﻿{
+  "target": {
+    "owner": "davidliuzhibo",
+    "repo": "clawmingguang",
+    "url": "https://github.com/davidliuzhibo/clawmingguang",
+    "slug": "davidliuzhibo/clawmingguang"
+  },
+  "readme": {
+    "url": "https://raw.githubusercontent.com/davidliuzhibo/clawmingguang/main/README.md",
+    "label": "README"
+  },
+  "docs": [
+    {
+      "url": "https://raw.githubusercontent.com/davidliuzhibo/clawmingguang/main/docs/architecture.md",
+      "label": "docs/architecture.md"
+    }
+  ],
+  "brief": {
+    "project_name": "clawmingguang",
+    "why": [
+      "Skill ecosystems grow fast. Once a claw-based agent starts installing or updating skills, the real problem is no longer discovery alone. The real problem is trust:",
+      "Which skills should be enabled automatically?",
+      "Which ones need manual review?",
+      "Which runtime actions should be blocked even after installation?",
+      "How do operators understand what happened after a failure?"
+    ],
+    "mechanism": [
+      "prompts can be bypassed",
+      "long context can dilute constraints",
+      "tools require deterministic checks outside the model",
+      "runtime policy should survive model mistakes",
+      "inspect metadata",
+      "inspect code patterns",
+      "inspect declared dependencies",
+      "block high-risk skills",
+      "require manual review for medium-risk skills with sensitive capabilities"
+    ],
+    "features": [
+      "review models for skills",
+      "runtime policy schema",
+      "examples for capability manifests and review outputs",
+      "architecture and threat-model docs",
+      "public reference list for the project and promo video"
+    ],
+    "advantages": [],
+    "cta": [
+      "Search GitHub for clawmingguang."
+    ]
+  },
+  "script_sections": [
+    {
+      "key": "why",
+      "title": "Why It Matters",
+      "visual_focus": "problem_and_value",
+      "narration": "clawmingguang addresses this core problem: Skill ecosystems grow fast. Once a claw-based agent starts installing or updating skills, the real problem is no longer discovery alone. The real problem is trust:; Which skills should be enabled automatically?; Which ones need manual review?."
+    },
+    {
+      "key": "mechanism",
+      "title": "How It Works",
+      "visual_focus": "mechanism_and_flow",
+      "narration": "Its core mechanism includes: prompts can be bypassed; long context can dilute constraints; tools require deterministic checks outside the model."
+    },
+    {
+      "key": "features",
+      "title": "What It Includes",
+      "visual_focus": "feature_grid",
+      "narration": "The most presentation-worthy capabilities are: review models for skills; runtime policy schema; examples for capability manifests and review outputs."
+    },
+    {
+      "key": "cta",
+      "title": "Call To Action",
+      "visual_focus": "repo_name_and_search_hint",
+      "narration": "To learn more, Search GitHub for clawmingguang."
+    }
+  ],
+  "script_sections_zh": [
+    {
+      "key": "why",
+      "title": "Ϊʲô��Ҫ",
+      "visual_focus": "problem_and_value",
+      "narration": "clawmingguang ��ҪҪ����������ǣ�Skill ecosystems grow fast. Once a claw-based agent starts installing or updating skills, the real problem is no longer discovery alone. The real problem is trust:��Which skills should be enabled automatically?��Which ones need manual review?��"
+    },
+    {
+      "key": "mechanism",
+      "title": "ʵ�ֻ���",
+      "visual_focus": "mechanism_and_flow",
+      "narration": "���ĺ��Ļ��ư�����prompts can be bypassed��long context can dilute constraints��tools require deterministic checks outside the model��"
+    },
+    {
+      "key": "features",
+      "title": "�ؼ�����",
+      "visual_focus": "feature_grid",
+      "narration": "��ǰ��ֵ��չʾ�������У�review models for skills��runtime policy schema��examples for capability manifests and review outputs��"
+    },
+    {
+      "key": "cta",
+      "title": "�ж�����",
+      "visual_focus": "repo_name_and_search_hint",
+      "narration": "��������һ���˽⣬����Search GitHub for clawmingguang��"
+    }
+  ],
+  "main_slides": [
+    {
+      "key": "why",
+      "title": "Why It Matters",
+      "subtitle": "Problem And Value",
+      "bullets": [
+        "Skill ecosystems grow fast. Once a claw-based agent starts installing or updating skills, the real problem is no longer discovery alone. The real problem is trust:",
+        "Which skills should be enabled automatically?",
+        "Which ones need manual review?",
+        "Which runtime actions should be blocked even after installation?"
+      ]
+    },
+    {
+      "key": "mechanism",
+      "title": "How It Works",
+      "subtitle": "Mechanism And Flow",
+      "bullets": [
+        "prompts can be bypassed",
+        "long context can dilute constraints",
+        "tools require deterministic checks outside the model",
+        "runtime policy should survive model mistakes"
+      ]
+    },
+    {
+      "key": "features",
+      "title": "What It Includes",
+      "subtitle": "Feature Grid",
+      "bullets": [
+        "review models for skills",
+        "runtime policy schema",
+        "examples for capability manifests and review outputs",
+        "architecture and threat-model docs"
+      ]
+    },
+    {
+      "key": "cta",
+      "title": "Call To Action",
+      "subtitle": "Repo Name And Search Hint",
+      "bullets": [
+        "Search GitHub for clawmingguang."
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "key": "ingest",
+      "title": "Read Repo",
+      "output": "readme_and_docs"
+    },
+    {
+      "key": "brief",
+      "title": "Build Brief",
+      "output": "project_brief"
+    },
+    {
+      "key": "script",
+      "title": "Draft Script",
+      "output": "video_script"
+    },
+    {
+      "key": "slides",
+      "title": "Build Slides",
+      "output": "review_slides"
+    },
+    {
+      "key": "review",
+      "title": "Review Gate",
+      "output": "approved_slides"
+    },
+    {
+      "key": "voice",
+      "title": "Generate Narration",
+      "output": "audio_and_subtitles"
+    },
+    {
+      "key": "video",
+      "title": "Assemble Video",
+      "output": "final_video"
+    }
+  ]
+}

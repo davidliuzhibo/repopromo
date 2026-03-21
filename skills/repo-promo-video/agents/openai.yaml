@@ -1,0 +1,4 @@
+version: 1
+display_name: Repo Promo Video
+short_description: Turn a GitHub project into a promo-video workflow with script, slides, narration, and subtitles.
+default_prompt: Turn this repository into a short vertical promo video workflow.

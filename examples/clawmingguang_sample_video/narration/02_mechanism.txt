@@ -1,0 +1,1 @@
+它的核心机制包括：prompts can be bypassed；long context can dilute constraints；tools require deterministic checks outside the model。

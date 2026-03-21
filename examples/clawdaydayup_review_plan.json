@@ -1,0 +1,52 @@
+﻿{
+  "target": {
+    "owner": "davidliuzhibo",
+    "repo": "clawdaydayup",
+    "url": "https://github.com/davidliuzhibo/clawdaydayup",
+    "branch": "main",
+    "slug": "davidliuzhibo/clawdaydayup"
+  },
+  "readme_candidates": [
+    "https://raw.githubusercontent.com/davidliuzhibo/clawdaydayup/main/README.md",
+    "https://raw.githubusercontent.com/davidliuzhibo/clawdaydayup/master/README.md",
+    "https://raw.githubusercontent.com/davidliuzhibo/clawdaydayup/main/README.zh-CN.md",
+    "https://raw.githubusercontent.com/davidliuzhibo/clawdaydayup/master/README.zh-CN.md"
+  ],
+  "stages": [
+    {
+      "key": "ingest",
+      "title": "Read Repo",
+      "output": "readme_and_docs"
+    },
+    {
+      "key": "brief",
+      "title": "Build Brief",
+      "output": "project_brief"
+    },
+    {
+      "key": "script",
+      "title": "Draft Script",
+      "output": "video_script"
+    },
+    {
+      "key": "slides",
+      "title": "Build Slides",
+      "output": "review_slides"
+    },
+    {
+      "key": "review",
+      "title": "Review Gate",
+      "output": "approved_slides"
+    },
+    {
+      "key": "voice",
+      "title": "Generate Narration",
+      "output": "audio_and_subtitles"
+    },
+    {
+      "key": "video",
+      "title": "Assemble Video",
+      "output": "final_video"
+    }
+  ]
+}

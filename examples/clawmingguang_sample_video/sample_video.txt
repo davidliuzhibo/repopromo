@@ -1,0 +1,4 @@
+file 'C:/Private/Trae/Projects/10.ServerClaw/share/repopromo/examples/clawmingguang_sample_video/segments/01_why.mp4'
+file 'C:/Private/Trae/Projects/10.ServerClaw/share/repopromo/examples/clawmingguang_sample_video/segments/02_mechanism.mp4'
+file 'C:/Private/Trae/Projects/10.ServerClaw/share/repopromo/examples/clawmingguang_sample_video/segments/03_features.mp4'
+file 'C:/Private/Trae/Projects/10.ServerClaw/share/repopromo/examples/clawmingguang_sample_video/segments/04_cta.mp4'

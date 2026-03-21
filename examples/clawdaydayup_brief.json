@@ -1,0 +1,92 @@
+﻿{
+  "target": {
+    "owner": "davidliuzhibo",
+    "repo": "clawdaydayup",
+    "url": "https://github.com/davidliuzhibo/clawdaydayup",
+    "slug": "davidliuzhibo/clawdaydayup"
+  },
+  "readme": {
+    "url": "https://raw.githubusercontent.com/davidliuzhibo/clawdaydayup/main/README.md",
+    "label": "README"
+  },
+  "docs": [],
+  "brief": {
+    "project_name": "clawdaydayup",
+    "why": [
+      "Most daily evolution systems stop at \"found something interesting\".",
+      "how to compare candidates from very different sources",
+      "how to avoid reinstalling near-duplicates",
+      "how to expand faster on strong days without becoming noisy every day",
+      "how to keep strategy aligned with the operator's interests",
+      "Based on the live pool sampled on `2026-03-10`:",
+      "`0.75` was too permissive and would frequently push the day to `20`",
+      "`0.85` produced `N = 12`",
+      "not over-expanding every day",
+      "still scaling up on unusually strong days"
+    ],
+    "mechanism": [
+      "base relevance scoring",
+      "goal-tag overlap",
+      "keyword bonuses",
+      "source-shape bonuses",
+      "EvoMap confidence / GDI / streak bonuses",
+      "if `N < 10`, install `10`",
+      "if `10 <= N <= 20`, install `N`",
+      "if `N > 20`, install `20`"
+    ],
+    "features": [
+      "multi-source intake:",
+      "OpenClaw usecases",
+      "Awesome OpenClaw Skills",
+      "ClawHub",
+      "EvoMap"
+    ],
+    "advantages": [
+      "primary CLI: `clawdaydayup`",
+      "compatibility CLI retained for now: `serverclaw-evolution-matrix`"
+    ],
+    "cta": [
+      "See [examples/quickstart.md](./examples/quickstart.md).",
+      "See [docs/github-publish-handoff.md](./docs/github-publish-handoff.md).",
+      "See [docs/github-release-copy-v0.1.0.md](./docs/github-release-copy-v0.1.0.md).",
+      "See [docs/release-plan-v0.1.0.md](./docs/release-plan-v0.1.0.md)."
+    ]
+  },
+  "stages": [
+    {
+      "key": "ingest",
+      "title": "Read Repo",
+      "output": "readme_and_docs"
+    },
+    {
+      "key": "brief",
+      "title": "Build Brief",
+      "output": "project_brief"
+    },
+    {
+      "key": "script",
+      "title": "Draft Script",
+      "output": "video_script"
+    },
+    {
+      "key": "slides",
+      "title": "Build Slides",
+      "output": "review_slides"
+    },
+    {
+      "key": "review",
+      "title": "Review Gate",
+      "output": "approved_slides"
+    },
+    {
+      "key": "voice",
+      "title": "Generate Narration",
+      "output": "audio_and_subtitles"
+    },
+    {
+      "key": "video",
+      "title": "Assemble Video",
+      "output": "final_video"
+    }
+  ]
+}

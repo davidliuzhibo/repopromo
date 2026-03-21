@@ -1,0 +1,1 @@
+clawmingguang 主要要解决的问题是：Skill ecosystems grow fast. Once a claw-based agent starts installing or updating skills, the real problem is no longer discovery alone. The real problem is trust:；Which skills should be enabled automatically?；Which ones need manual review?。
