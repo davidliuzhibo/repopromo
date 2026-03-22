@@ -9,14 +9,18 @@ from .models import SlideSpec
 BASE_CSS = """
 :root {
   --bg-1: #061520;
-  --bg-2: #0c2431;
-  --panel: rgba(9, 24, 35, 0.86);
-  --panel-soft: rgba(17, 40, 56, 0.74);
+  --bg-2: #0d2230;
+  --bg-3: #112d3d;
+  --panel: rgba(9, 24, 35, 0.84);
+  --panel-soft: rgba(18, 43, 59, 0.76);
+  --panel-strong: rgba(20, 49, 66, 0.92);
   --border: rgba(129, 196, 255, 0.22);
   --text: #f4fbff;
-  --muted: #99b7c8;
+  --muted: #9ab8c8;
   --accent: #6ad1ff;
   --accent-2: #72f0c3;
+  --accent-3: #ffd17a;
+  --shadow: 0 32px 80px rgba(0, 0, 0, 0.34);
 }
 * { box-sizing: border-box; }
 html, body {
@@ -28,85 +32,160 @@ html, body {
   color: var(--text);
   background:
     radial-gradient(circle at top left, rgba(106, 209, 255, 0.18), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(114, 240, 195, 0.16), transparent 22%),
-    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    radial-gradient(circle at bottom right, rgba(114, 240, 195, 0.16), transparent 20%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2) 58%, var(--bg-3));
 }
-body { padding: 72px; }
+body { padding: 64px; }
 .shell {
   display: flex;
   flex-direction: column;
   height: 100%;
   border: 1px solid var(--border);
   border-radius: 42px;
-  background: linear-gradient(180deg, rgba(8, 19, 29, 0.88), rgba(7, 18, 28, 0.94));
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
+  background:
+    linear-gradient(180deg, rgba(8, 19, 29, 0.92), rgba(7, 18, 28, 0.96)),
+    radial-gradient(circle at top right, rgba(106, 209, 255, 0.08), transparent 24%);
+  box-shadow: var(--shadow);
   overflow: hidden;
+  position: relative;
+}
+.shell::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  pointer-events: none;
 }
 .hero {
-  padding: 56px 56px 28px;
+  padding: 50px 54px 26px;
   border-bottom: 1px solid rgba(129, 196, 255, 0.12);
 }
-.eyebrow {
+.topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.eyebrow,
+.page-chip {
   display: inline-flex;
   padding: 10px 18px;
   border-radius: 999px;
   background: rgba(106, 209, 255, 0.1);
   color: var(--accent);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.page-chip {
+  background: rgba(255, 209, 122, 0.1);
+  color: var(--accent-3);
+}
 .title {
-  margin: 22px 0 14px;
-  font-size: 82px;
-  line-height: 1.05;
+  margin: 18px 0 12px;
+  font-size: 78px;
+  line-height: 1.04;
   font-weight: 800;
+  max-width: 860px;
 }
 .subtitle {
-  font-size: 34px;
-  line-height: 1.45;
+  font-size: 31px;
+  line-height: 1.42;
   color: var(--muted);
-  max-width: 860px;
+  max-width: 880px;
 }
 .content {
   flex: 1;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 28px;
-  padding: 30px 56px 56px;
+  grid-template-columns: 1.28fr 0.72fr;
+  gap: 24px;
+  padding: 26px 54px 30px;
 }
 .panel {
   border: 1px solid var(--border);
   border-radius: 30px;
   background: var(--panel);
-  padding: 30px 32px;
+  padding: 28px 30px;
 }
 .panel.soft { background: var(--panel-soft); }
+.panel.strong { background: var(--panel-strong); }
 .panel h3 {
   margin: 0 0 18px;
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1.2;
   color: var(--accent-2);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.content-main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 20px;
+}
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.tile {
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+.tile h4 {
+  margin: 0 0 12px;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.tile p {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.4;
+  color: var(--text);
+}
 .bullets {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 .bullet {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 31px;
+  font-size: 28px;
   line-height: 1.42;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.bullet-index {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(106, 209, 255, 0.14);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.bullet-text {
+  flex: 1;
 }
 .meta {
   display: grid;
   gap: 18px;
+  grid-template-rows: auto auto 1fr;
 }
 .metric {
   padding: 18px 20px;
@@ -115,20 +194,41 @@ body { padding: 72px; }
   border: 1px solid rgba(106, 209, 255, 0.18);
 }
 .metric .label {
-  font-size: 22px;
+  font-size: 18px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .metric .value {
   margin-top: 8px;
-  font-size: 30px;
-  line-height: 1.35;
+  font-size: 28px;
+  line-height: 1.34;
+}
+.repo-name {
+  word-break: break-word;
+}
+.review-goal {
+  display: grid;
+  gap: 14px;
+}
+.goal-line {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 24px;
+  line-height: 1.42;
 }
 .footer {
-  padding: 0 56px 44px;
-  font-size: 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 54px 42px;
+  font-size: 22px;
   color: var(--muted);
+}
+.footer strong {
+  color: var(--accent);
 }
 a { color: inherit; }
 """
@@ -136,8 +236,21 @@ a { color: inherit; }
 
 def _render_bullets(bullets: list[str]) -> str:
     if not bullets:
-        return '<div class="bullet">No bullets extracted yet.</div>'
-    return "\n".join(f'<div class="bullet">{escape(bullet)}</div>' for bullet in bullets)
+        return (
+            '<div class="bullet">'
+            '<span class="bullet-index">?</span>'
+            '<div class="bullet-text">No bullets extracted yet.</div>'
+            "</div>"
+        )
+    return "\n".join(
+        (
+            '<div class="bullet">'
+            f'<span class="bullet-index">{index}</span>'
+            f'<div class="bullet-text">{escape(bullet)}</div>'
+            "</div>"
+        )
+        for index, bullet in enumerate(bullets, start=1)
+    )
 
 
 def render_slide_html(slide: SlideSpec, *, repo_name: str, index: int, total: int) -> str:
@@ -243,3 +356,4 @@ def write_review_slides(output_dir: str | Path, *, repo_name: str, slides: list[
     index_path.write_text(render_index_html(repo_name, slides), encoding="utf-8")
     written.append(index_path)
     return written
+
