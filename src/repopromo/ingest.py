@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -29,6 +30,33 @@ COMMON_DOC_PATHS = (
     "docs/src/index.md",
     "docs/src/README.md",
     "documentation/README.md",
+)
+DISCOVERY_DIRS = (
+    "docs",
+    "guide",
+    "documentation",
+    "website/docs",
+    "docs/src",
+)
+PREFERRED_DOC_NAMES = (
+    "readme.md",
+    "readme.mdx",
+    "index.md",
+    "index.mdx",
+    "overview.md",
+    "architecture.md",
+    "workflow.md",
+    "quickstart.md",
+    "getting-started.md",
+    "introduction.md",
+)
+PREFERRED_DOC_ORDER = {name: index for index, name in enumerate(PREFERRED_DOC_NAMES)}
+DOC_PATH_HINTS = (
+    "docs/",
+    "guide/",
+    "documentation/",
+    "website/docs/",
+    "docs/src/",
 )
 
 
@@ -82,6 +110,19 @@ def fetch_url_text(url: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> 
         return response.read().decode(charset, errors="replace")
 
 
+def fetch_url_json(url: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> Any:
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "RepoPromo/0.1 (+https://github.com)",
+            "Accept": "application/vnd.github+json",
+        },
+    )
+    with urlopen(request, timeout=timeout_seconds) as response:
+        charset = response.headers.get_content_charset() or "utf-8"
+        return json.loads(response.read().decode(charset, errors="replace"))
+
+
 def fetch_first_available(
     urls: list[str],
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
@@ -117,6 +158,103 @@ def fetch_optional_documents(
     return docs
 
 
+def discover_doc_candidates(
+    target: RepoTarget,
+    *,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    limit: int = 12,
+) -> list[tuple[str, str]]:
+    candidates: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for branch in ("main", "master"):
+        for doc_dir in DISCOVERY_DIRS:
+            api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}/contents/{doc_dir}?ref={branch}"
+            try:
+                items = fetch_url_json(api_url, timeout_seconds=timeout_seconds)
+            except Exception:
+                continue
+            if not isinstance(items, list):
+                continue
+            preferred = []
+            fallback = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("type") != "file":
+                    continue
+                path = str(item.get("path", "") or "").strip()
+                download_url = str(item.get("download_url", "") or "").strip()
+                if not path or not download_url:
+                    continue
+                lower_name = path.rsplit("/", 1)[-1].lower()
+                if not (lower_name.endswith(".md") or lower_name.endswith(".mdx")):
+                    continue
+                pair = (path, download_url)
+                if lower_name in PREFERRED_DOC_NAMES:
+                    preferred.append(pair)
+                else:
+                    fallback.append(pair)
+            preferred.sort(key=lambda pair: PREFERRED_DOC_ORDER.get(pair[0].rsplit("/", 1)[-1].lower(), 999))
+            fallback.sort(key=lambda pair: pair[0].lower())
+            for pair in [*preferred, *fallback]:
+                if pair[0] in seen:
+                    continue
+                candidates.append(pair)
+                seen.add(pair[0])
+                if len(candidates) >= limit:
+                    return candidates
+    return candidates
+
+
+def discover_doc_candidates_recursive(
+    target: RepoTarget,
+    *,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    limit: int = 20,
+) -> list[tuple[str, str]]:
+    candidates: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for branch in ("main", "master"):
+        api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}/git/trees/{branch}?recursive=1"
+        try:
+            payload = fetch_url_json(api_url, timeout_seconds=timeout_seconds)
+        except Exception:
+            continue
+        tree = payload.get("tree", []) if isinstance(payload, dict) else []
+        if not isinstance(tree, list):
+            continue
+        ranked: list[tuple[tuple[int, int, str], tuple[str, str]]] = []
+        for item in tree:
+            if not isinstance(item, dict):
+                continue
+            if item.get("type") != "blob":
+                continue
+            path = str(item.get("path", "") or "").strip()
+            if not path:
+                continue
+            lower = path.lower()
+            if not (lower.endswith(".md") or lower.endswith(".mdx")):
+                continue
+            if not any(hint in lower for hint in DOC_PATH_HINTS):
+                continue
+            if lower in seen:
+                continue
+            file_name = lower.rsplit("/", 1)[-1]
+            priority = PREFERRED_DOC_ORDER.get(file_name, 999)
+            depth = lower.count("/")
+            download_url = f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/{branch}/{path}"
+            ranked.append(((priority, depth, lower), (path, download_url)))
+        ranked.sort(key=lambda item: item[0])
+        for _, pair in ranked:
+            if pair[0].lower() in seen:
+                continue
+            candidates.append(pair)
+            seen.add(pair[0].lower())
+            if len(candidates) >= limit:
+                return candidates
+    return candidates
+
+
 def fetch_repository_snapshot(
     target: RepoTarget,
     *,
@@ -127,8 +265,13 @@ def fetch_repository_snapshot(
         raw_readme_candidates(target),
         timeout_seconds=timeout_seconds,
     )
+    doc_candidates = [
+        *raw_doc_candidates(target),
+        *discover_doc_candidates(target, timeout_seconds=timeout_seconds, limit=max(doc_limit * 2, 8)),
+        *discover_doc_candidates_recursive(target, timeout_seconds=timeout_seconds, limit=max(doc_limit * 4, 16)),
+    ]
     docs = fetch_optional_documents(
-        raw_doc_candidates(target),
+        doc_candidates,
         timeout_seconds=timeout_seconds,
         limit=doc_limit,
     )

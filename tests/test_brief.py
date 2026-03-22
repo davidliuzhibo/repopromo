@@ -10,6 +10,8 @@ from repopromo.brief import build_project_brief, extract_headings
 from repopromo.cli import main
 from repopromo.ingest import (
     RepositorySnapshot,
+    discover_doc_candidates,
+    discover_doc_candidates_recursive,
     fetch_optional_documents,
     parse_github_repo_url,
     raw_doc_candidates,
@@ -106,6 +108,37 @@ class BriefTests(unittest.TestCase):
                 limit=2,
             )
         self.assertEqual([doc.label for doc in docs], ["docs/a.md", "docs/c.md"])
+
+    def test_discover_doc_candidates_prefers_common_doc_files(self) -> None:
+        target = parse_github_repo_url("https://github.com/example/project")
+        payload = [
+            {"type": "file", "path": "docs/guide.md", "download_url": "https://example.com/guide.md"},
+            {"type": "file", "path": "docs/index.mdx", "download_url": "https://example.com/index.mdx"},
+            {"type": "file", "path": "docs/README.md", "download_url": "https://example.com/README.md"},
+            {"type": "dir", "path": "docs/nested"},
+        ]
+        with mock.patch("repopromo.ingest.fetch_url_json", return_value=payload):
+            candidates = discover_doc_candidates(target, limit=3)
+        self.assertEqual(
+            [label for label, _ in candidates],
+            ["docs/README.md", "docs/index.mdx", "docs/guide.md"],
+        )
+
+    def test_discover_doc_candidates_recursive_finds_nested_docs(self) -> None:
+        target = parse_github_repo_url("https://github.com/example/project")
+        payload = {
+            "tree": [
+                {"type": "blob", "path": "docs/en/docs/index.md"},
+                {"type": "blob", "path": "docs/en/docs/tutorial.md"},
+                {"type": "blob", "path": "src/README.md"},
+            ]
+        }
+        with mock.patch("repopromo.ingest.fetch_url_json", return_value=payload):
+            candidates = discover_doc_candidates_recursive(target, limit=3)
+        self.assertEqual(
+            [label for label, _ in candidates],
+            ["docs/en/docs/index.md", "docs/en/docs/tutorial.md"],
+        )
 
     def test_build_brief_bundle_from_repo_url(self) -> None:
         target = parse_github_repo_url("https://github.com/davidliuzhibo/clawmingguang")
