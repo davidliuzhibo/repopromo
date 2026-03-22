@@ -10,12 +10,25 @@ from .models import RepoTarget, SourceDocument
 DEFAULT_TIMEOUT_SECONDS = 12
 COMMON_DOC_PATHS = (
     "docs/README.md",
+    "docs/README.mdx",
     "docs/index.md",
+    "docs/index.mdx",
     "docs/overview.md",
     "docs/architecture.md",
     "docs/workflow.md",
     "docs/getting-started.md",
     "docs/quickstart.md",
+    "docs/introduction.md",
+    "guide/README.md",
+    "guide/index.md",
+    "website/README.md",
+    "website/docs/index.md",
+    "website/docs/index.mdx",
+    "website/docs/README.md",
+    "website/docs/README.mdx",
+    "docs/src/index.md",
+    "docs/src/README.md",
+    "documentation/README.md",
 )
 
 
