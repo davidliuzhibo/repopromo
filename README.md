@@ -61,6 +61,7 @@ RepoPromo currently includes:
 - PNG review slide rendering
 - a minimal sample-video pipeline with Xiaoxiao narration
 - safe asset packaging with whitelist-based zip creation
+- optional GitHub-authenticated ingest via `REPOPROMO_GITHUB_TOKEN`, `GITHUB_TOKEN`, `GH_TOKEN`, or local `gh auth token`
 - a skill skeleton for a future agent workflow
 
 ## Demos

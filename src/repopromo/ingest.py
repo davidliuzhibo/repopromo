@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 from dataclasses import dataclass
+from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -58,6 +61,24 @@ DOC_PATH_HINTS = (
     "website/docs/",
     "docs/src/",
 )
+README_FILENAMES = (
+    "README.md",
+    "README.mdx",
+    "README.rst",
+    "README.txt",
+    "README",
+    "README.zh-CN.md",
+    "README.zh-CN.mdx",
+    "README.zh-CN.rst",
+    "README.zh-CN.txt",
+)
+README_FILENAME_ORDER = {name.lower(): index for index, name in enumerate(README_FILENAMES)}
+GITHUB_TOKEN_ENV_KEYS = (
+    "REPOPROMO_GITHUB_TOKEN",
+    "GITHUB_TOKEN",
+    "GH_TOKEN",
+)
+_GITHUB_TOKEN_CACHE: str | None | bool = False
 
 
 @dataclass(slots=True)
@@ -81,18 +102,57 @@ def parse_github_repo_url(url: str) -> RepoTarget:
     return RepoTarget(owner=owner, repo=repo, url=f"https://github.com/{owner}/{repo}")
 
 
-def raw_readme_candidates(target: RepoTarget) -> list[str]:
-    return [
-        f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/main/README.md",
-        f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/master/README.md",
-        f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/main/README.zh-CN.md",
-        f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/master/README.zh-CN.md",
-    ]
+def github_token() -> str | None:
+    global _GITHUB_TOKEN_CACHE
+    if isinstance(_GITHUB_TOKEN_CACHE, str):
+        return _GITHUB_TOKEN_CACHE
+    for key in GITHUB_TOKEN_ENV_KEYS:
+        value = os.getenv(key, "").strip()
+        if value:
+            _GITHUB_TOKEN_CACHE = value
+            return value
+    if _GITHUB_TOKEN_CACHE is False:
+        try:
+            result = subprocess.run(
+                ["gh", "auth", "token"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+        except Exception:
+            _GITHUB_TOKEN_CACHE = None
+            return None
+        token = result.stdout.strip() if result.returncode == 0 else ""
+        _GITHUB_TOKEN_CACHE = token or None
+        return token or None
+    return None
 
 
-def raw_doc_candidates(target: RepoTarget) -> list[tuple[str, str]]:
+def branch_candidates(target: RepoTarget, default_branch: str | None = None) -> list[str]:
+    branches: list[str] = []
+    for branch in (default_branch, target.branch, "main", "master"):
+        candidate = (branch or "").strip()
+        if candidate and candidate not in branches:
+            branches.append(candidate)
+    return branches
+
+
+def raw_readme_candidates(target: RepoTarget, branches: list[str] | None = None) -> list[str]:
+    selected_branches = branches or branch_candidates(target)
+    candidates: list[str] = []
+    for branch in selected_branches:
+        for filename in README_FILENAMES:
+            candidates.append(
+                f"https://raw.githubusercontent.com/{target.owner}/{target.repo}/{branch}/{filename}"
+            )
+    return candidates
+
+
+def raw_doc_candidates(target: RepoTarget, branches: list[str] | None = None) -> list[tuple[str, str]]:
+    selected_branches = branches or branch_candidates(target)
     candidates: list[tuple[str, str]] = []
-    for branch in ("main", "master"):
+    for branch in selected_branches:
         for path in COMMON_DOC_PATHS:
             candidates.append(
                 (
@@ -103,8 +163,18 @@ def raw_doc_candidates(target: RepoTarget) -> list[tuple[str, str]]:
     return candidates
 
 
+def github_request_headers(*, accept: str | None = None) -> dict[str, str]:
+    headers = {"User-Agent": "RepoPromo/0.1 (+https://github.com)"}
+    if accept:
+        headers["Accept"] = accept
+    token = github_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
 def fetch_url_text(url: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> str:
-    request = Request(url, headers={"User-Agent": "RepoPromo/0.1 (+https://github.com)"})
+    request = Request(url, headers=github_request_headers())
     with urlopen(request, timeout=timeout_seconds) as response:
         charset = response.headers.get_content_charset() or "utf-8"
         return response.read().decode(charset, errors="replace")
@@ -113,10 +183,7 @@ def fetch_url_text(url: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> 
 def fetch_url_json(url: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> Any:
     request = Request(
         url,
-        headers={
-            "User-Agent": "RepoPromo/0.1 (+https://github.com)",
-            "Accept": "application/vnd.github+json",
-        },
+        headers=github_request_headers(accept="application/vnd.github+json"),
     )
     with urlopen(request, timeout=timeout_seconds) as response:
         charset = response.headers.get_content_charset() or "utf-8"
@@ -134,6 +201,71 @@ def fetch_first_available(
         except (HTTPError, URLError, TimeoutError, OSError) as exc:
             last_error = exc
     raise RuntimeError(f"Unable to fetch any candidate URL. Last error: {last_error}")
+
+
+def detect_default_branch(
+    target: RepoTarget,
+    *,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+) -> str | None:
+    api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}"
+    try:
+        payload = fetch_url_json(api_url, timeout_seconds=timeout_seconds)
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    branch = str(payload.get("default_branch", "") or "").strip()
+    return branch or None
+
+
+def discover_root_readme_candidates(
+    target: RepoTarget,
+    *,
+    branches: list[str] | None = None,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+) -> list[str]:
+    candidates: list[str] = []
+    seen: set[str] = set()
+    for branch in (branches or branch_candidates(target)):
+        api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}/contents?ref={branch}"
+        try:
+            items = fetch_url_json(api_url, timeout_seconds=timeout_seconds)
+        except Exception:
+            continue
+        if not isinstance(items, list):
+            continue
+        preferred: list[tuple[int, str]] = []
+        fallback: list[tuple[str, str]] = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            if item.get("type") != "file":
+                continue
+            path = str(item.get("path", "") or "").strip()
+            download_url = str(item.get("download_url", "") or "").strip()
+            if not path or not download_url:
+                continue
+            if "/" in path:
+                continue
+            lower_name = path.lower()
+            if not lower_name.startswith("readme"):
+                continue
+            if lower_name in seen:
+                continue
+            priority = README_FILENAME_ORDER.get(lower_name)
+            if priority is not None:
+                preferred.append((priority, download_url))
+            else:
+                fallback.append((lower_name, download_url))
+            seen.add(lower_name)
+        ordered_urls = [url for _, url in sorted(preferred, key=lambda item: item[0])] + [
+            url for _, url in sorted(fallback, key=lambda item: item[0])
+        ]
+        for url in ordered_urls:
+            if url not in candidates:
+                candidates.append(url)
+    return candidates
 
 
 def fetch_optional_documents(
@@ -161,12 +293,13 @@ def fetch_optional_documents(
 def discover_doc_candidates(
     target: RepoTarget,
     *,
+    branches: list[str] | None = None,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     limit: int = 12,
 ) -> list[tuple[str, str]]:
     candidates: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for branch in ("main", "master"):
+    for branch in (branches or branch_candidates(target)):
         for doc_dir in DISCOVERY_DIRS:
             api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}/contents/{doc_dir}?ref={branch}"
             try:
@@ -209,12 +342,13 @@ def discover_doc_candidates(
 def discover_doc_candidates_recursive(
     target: RepoTarget,
     *,
+    branches: list[str] | None = None,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     limit: int = 20,
 ) -> list[tuple[str, str]]:
     candidates: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for branch in ("main", "master"):
+    for branch in (branches or branch_candidates(target)):
         api_url = f"https://api.github.com/repos/{target.owner}/{target.repo}/git/trees/{branch}?recursive=1"
         try:
             payload = fetch_url_json(api_url, timeout_seconds=timeout_seconds)
@@ -261,14 +395,31 @@ def fetch_repository_snapshot(
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     doc_limit: int = 4,
 ) -> RepositorySnapshot:
+    default_branch = detect_default_branch(target, timeout_seconds=timeout_seconds)
+    if default_branch:
+        target.branch = default_branch
+    branches = branch_candidates(target, default_branch)
     readme_url, readme_text = fetch_first_available(
-        raw_readme_candidates(target),
+        [
+            *discover_root_readme_candidates(target, branches=branches, timeout_seconds=timeout_seconds),
+            *raw_readme_candidates(target, branches=branches),
+        ],
         timeout_seconds=timeout_seconds,
     )
     doc_candidates = [
-        *raw_doc_candidates(target),
-        *discover_doc_candidates(target, timeout_seconds=timeout_seconds, limit=max(doc_limit * 2, 8)),
-        *discover_doc_candidates_recursive(target, timeout_seconds=timeout_seconds, limit=max(doc_limit * 4, 16)),
+        *raw_doc_candidates(target, branches=branches),
+        *discover_doc_candidates(
+            target,
+            branches=branches,
+            timeout_seconds=timeout_seconds,
+            limit=max(doc_limit * 2, 8),
+        ),
+        *discover_doc_candidates_recursive(
+            target,
+            branches=branches,
+            timeout_seconds=timeout_seconds,
+            limit=max(doc_limit * 4, 16),
+        ),
     ]
     docs = fetch_optional_documents(
         doc_candidates,

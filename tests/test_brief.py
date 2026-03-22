@@ -10,9 +10,12 @@ from repopromo.brief import build_project_brief, extract_headings
 from repopromo.cli import main
 from repopromo.ingest import (
     RepositorySnapshot,
+    branch_candidates,
     discover_doc_candidates,
     discover_doc_candidates_recursive,
+    discover_root_readme_candidates,
     fetch_optional_documents,
+    github_token,
     parse_github_repo_url,
     raw_doc_candidates,
     raw_readme_candidates,
@@ -74,8 +77,9 @@ class BriefTests(unittest.TestCase):
         self.assertEqual(target.owner, "davidliuzhibo")
         self.assertEqual(target.repo, "clawmingguang")
         self.assertEqual(target.slug, "davidliuzhibo/clawmingguang")
-        self.assertEqual(len(raw_readme_candidates(target)), 4)
+        self.assertGreater(len(raw_readme_candidates(target)), 4)
         self.assertGreater(len(raw_doc_candidates(target)), 4)
+        self.assertEqual(branch_candidates(target, "develop"), ["develop", "main", "master"])
 
     def test_build_workflow_modes(self) -> None:
         review = build_workflow(PromoMode.REVIEW)
@@ -94,7 +98,7 @@ class BriefTests(unittest.TestCase):
         self.assertEqual(plan.stages[0].key, "ingest")
         self.assertEqual(plan.stages[-1].key, "video")
         self.assertTrue(any(stage.key == "review" for stage in plan.stages))
-        self.assertEqual(len(plan.readme_candidates), 4)
+        self.assertGreater(len(plan.readme_candidates), 4)
 
     def test_fetch_optional_documents_uses_successes_only(self) -> None:
         with mock.patch("repopromo.ingest.fetch_url_text") as fetch_url_text:
@@ -139,6 +143,51 @@ class BriefTests(unittest.TestCase):
             [label for label, _ in candidates],
             ["docs/en/docs/index.md", "docs/en/docs/tutorial.md"],
         )
+
+    def test_discover_root_readme_candidates_supports_rst(self) -> None:
+        target = parse_github_repo_url("https://github.com/example/project")
+        payload = [
+            {"type": "file", "path": "README.rst", "download_url": "https://example.com/README.rst"},
+            {"type": "file", "path": "README.md", "download_url": "https://example.com/README.md"},
+            {"type": "file", "path": "README.zh-CN.md", "download_url": "https://example.com/README.zh-CN.md"},
+        ]
+        with mock.patch("repopromo.ingest.fetch_url_json", return_value=payload):
+            candidates = discover_root_readme_candidates(target, branches=["main"])
+        self.assertEqual(
+            candidates,
+            [
+                "https://example.com/README.md",
+                "https://example.com/README.rst",
+                "https://example.com/README.zh-CN.md",
+            ],
+        )
+
+    def test_github_token_prefers_repopromo_key(self) -> None:
+        with mock.patch.dict(
+            "os.environ",
+            {
+                "GITHUB_TOKEN": "generic-token",
+                "REPOPROMO_GITHUB_TOKEN": "repo-token",
+            },
+            clear=False,
+        ):
+            with mock.patch("repopromo.ingest._GITHUB_TOKEN_CACHE", False):
+                self.assertEqual(github_token(), "repo-token")
+
+    def test_github_token_falls_back_to_gh_cli(self) -> None:
+        with mock.patch.dict(
+            "os.environ",
+            {
+                "GITHUB_TOKEN": "",
+                "REPOPROMO_GITHUB_TOKEN": "",
+                "GH_TOKEN": "",
+            },
+            clear=False,
+        ):
+            completed = mock.Mock(returncode=0, stdout="gh-token\n")
+            with mock.patch("repopromo.ingest._GITHUB_TOKEN_CACHE", False):
+                with mock.patch("repopromo.ingest.subprocess.run", return_value=completed):
+                    self.assertEqual(github_token(), "gh-token")
 
     def test_build_brief_bundle_from_repo_url(self) -> None:
         target = parse_github_repo_url("https://github.com/davidliuzhibo/clawmingguang")
