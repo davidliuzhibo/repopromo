@@ -60,6 +60,7 @@ RepoPromo currently includes:
 - HTML review slide rendering
 - PNG review slide rendering
 - a minimal sample-video pipeline with Xiaoxiao narration
+- safe asset packaging with whitelist-based zip creation
 - a skill skeleton for a future agent workflow
 
 ## Demos

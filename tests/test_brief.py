@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
 
+from repopromo.archive import create_assets_zip
 from repopromo.brief import build_project_brief, extract_headings
 from repopromo.cli import main
 from repopromo.ingest import (
@@ -161,6 +162,24 @@ class BriefTests(unittest.TestCase):
 
     def test_seconds_to_srt(self) -> None:
         self.assertEqual(seconds_to_srt(65.432), "00:01:05,432")
+
+    def test_create_assets_zip_only_keeps_whitelisted_files(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            base = Path(temp_dir)
+            keep_dir = base / "keep"
+            skip_dir = base / "skip"
+            keep_dir.mkdir()
+            skip_dir.mkdir()
+            (keep_dir / "a.txt").write_text("a", encoding="utf-8")
+            (skip_dir / "b.txt").write_text("b", encoding="utf-8")
+            zip_path = create_assets_zip(base, "assets.zip", [keep_dir])
+            self.assertTrue(zip_path.exists())
+            import zipfile
+
+            with zipfile.ZipFile(zip_path, "r") as zf:
+                names = zf.namelist()
+            self.assertIn("keep/a.txt", names)
+            self.assertNotIn("skip/b.txt", names)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ import json
 import shutil
 from pathlib import Path
 
+from .archive import create_assets_zip
 from .models import PromoMode
 from .pipeline import build_brief_bundle_from_repo_url, plan_from_repo_url
 from .png_render import render_html_directory_to_pngs
@@ -225,6 +226,11 @@ def main() -> int:
 
         cover_path = base_dir / "sample_cover.png"
         shutil.copyfile(png_files[-1], cover_path)
+        zip_path = create_assets_zip(
+            base_dir,
+            "sample_assets.zip",
+            [video_path, cover_path, srt_path, html_dir, png_dir, narration_dir],
+        )
 
         payload = {
             "target": bundle.plan.target.slug,
@@ -232,6 +238,7 @@ def main() -> int:
             "video": str(video_path),
             "cover": str(cover_path),
             "srt": str(srt_path),
+            "zip": str(zip_path),
             "png_files": [str(path) for path in png_files],
         }
         print(json.dumps(payload, indent=2, ensure_ascii=False))
